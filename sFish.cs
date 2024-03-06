@@ -4,11 +4,15 @@ using UnityEngine;
 
 public class sFish : MonoBehaviour
 {
+    // Sounnd
+    public AudioClip collisionSound; // Sound effect to play
+    private AudioSource audioSource; // Reference to the AudioSource component
+
     // Sprites
     private SpriteRenderer gFish;
 
     // Reference to BG image
-    public GameObject backgroundObject; // Reference to the object with the SpriteRenderer
+    private GameObject backgroundObject; // Reference to the object with the SpriteRenderer
     private SpriteRenderer backgroundSpriteRenderer;
     private Bounds backgroundBounds;
 
@@ -37,6 +41,9 @@ public class sFish : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Get the AudioSource component attached to this GameObject
+        audioSource = GetComponent<AudioSource>();
+
         // Get player sprite component
         gFish = GetComponent<SpriteRenderer>();
         
@@ -266,5 +273,26 @@ public class sFish : MonoBehaviour
 		// set random action length from 1 - 3 seconds
 		actionLength = (Random.Range(0, 3)) + 1 * Time.deltaTime;
 	}
+
+    void OnCollisionEnter2D(Collision2D  collision)
+    {
+        // Check if the collision involves the player
+        if (collision.gameObject.CompareTag("Player"))
+        {
+        // Play the collision sound effect
+        if (collisionSound != null && audioSource != null)
+        {
+            Debug.Log("Playing collision sound effect");
+            audioSource.PlayOneShot(collisionSound);
+        }
+        else
+        {
+            Debug.LogWarning("Audio clip or audio source is null");
+        }
+
+            // Remove the object
+            Destroy(gameObject);
+        }
+    }
 }
 
