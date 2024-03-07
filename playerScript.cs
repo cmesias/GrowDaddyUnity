@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class playerScript : MonoBehaviour
 {
+    // Sounnd
+    public AudioSource sGulpSFX; // Reference to the AudioSource component
+
     // Sprites
     private SpriteRenderer gPlayer;
 
@@ -195,5 +198,19 @@ public class playerScript : MonoBehaviour
         }
 
         transform.position = position;
+    }
+
+    public void OnCollisionEnter2D(Collision2D  collision)
+    {
+
+        // Check if the collision involves the player
+        if (collision.gameObject.tag =="FishTag")
+        {
+            // Play the audio clip
+            sGulpSFX.Play();
+
+            // Remove the object
+            Destroy(collision.gameObject);
+        }
     }
 }
