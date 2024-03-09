@@ -4,8 +4,15 @@ using UnityEngine;
 
 public class playerScript : MonoBehaviour
 {
+    // Gulp popup
+    public GameObject prefabGulp; // Reference to the prefab to spawn
+
     // Sounnd
     public AudioSource sGulpSFX; // Reference to the AudioSource component
+    public AudioSource sDashSFX; // Reference to the AudioSource component
+
+    // Animations
+    public Animator animator;
 
     // Sprites
     private SpriteRenderer gPlayer;
@@ -16,15 +23,17 @@ public class playerScript : MonoBehaviour
     private Bounds backgroundBounds;
 
     // Movement
-    public float accelSpeed  = 0.5f;
-    public float deccelSpeed = 0.07f;
+    public float accelSpeed  = 1f;
+    public float deccelSpeed = 0.04f;
     public float velMax     = 4f;
 
     private float horizontal;
     private float vertical;
 
-    private float velX;
-    private float velY;
+    private float velX, velY;   // regualr movement
+    private float velX2, velY2; // used for boosting
+    private float M_PI =  3.14159265358979323846264338327950288f;   /* pi */
+    private float angle = 0f;
 
     private bool moveL = false;
     private bool moveR = false;
@@ -50,6 +59,18 @@ public class playerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {   
+        // Spacebar is pressed, perform your actions here
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+			DashAtAngle(10);
+        }
+
+        // A button on Xbox controller is pressed, perform your actions here
+        if (Input.GetButtonDown("Jump"))
+        {
+			DashAtAngle(10);
+        }
+
         ///////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////
@@ -88,55 +109,101 @@ public class playerScript : MonoBehaviour
         ///////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////
 
+	    // Player angle
+        angle = Mathf.Atan2(velY, velX) * Mathf.Rad2Deg;
+		if (angle < 0) {
+			angle = 360 - (-angle);
+		}
+
         // Handle movement
         if (moveL) {
-            velX -= accelSpeed;
+            if (velX > -velMax) {
+                velX -= accelSpeed;
+            }
             moving = true;
             facing = "left";
         }
         else if (moveR) {
-            velX += accelSpeed;
+            if (velX < velMax) {
+                velX += accelSpeed;
+            }
             moving = true;
             facing = "right";
         }
         if (moveU) {
-            velY -= accelSpeed;
+            if (velY > -velMax) {
+                velY -= accelSpeed;
+            }
             moving = true;
         }
         else if (moveD) {
-            velY += accelSpeed;
+            if (velY < velMax) {
+                velY += accelSpeed;
+            }
             moving = true;
         }
+
+		// Max velocity
+		if (velX > 10){
+			velX = 10;
+		}
+		if (velX < -10){
+			velX = -10;
+		}
+		if (velY > 10){
+			velY = 10;
+		}
+		if (velY < -10){
+			velY = -10;
+		}
+
+		// Max velocity
+		if (velX2 > 10){
+			velX2 = 10;
+		}
+		if (velX2 < -10){
+			velX2 = -10;
+		}
+		if (velY2 > 10){
+			velY2 = 10;
+		}
+		if (velY2 < -10){
+			velY2 = -10;
+		}
+
+        // Calculate movement amount
+        float valueVX = velX+velX2;
+        float valueVY = velY+velY2;
+        Vector2 movement = new Vector2(valueVX, valueVY) * Time.deltaTime;
+
+        // Move the player
+        transform.Translate(movement); 
+
+        // Decceleration
+        if (!moveU && !moveD) {
+            velY = velY - velY * deccelSpeed;
+        }
+        if (!moveL && !moveR) {
+            velX = velX - velX * deccelSpeed;
+        }
+		velX2 = velX2 - velX2 * deccelSpeed;
+		velY2 = velY2 - velY2 * deccelSpeed;
 
         // Stop movement check
         if (!moveL && !moveR && !moveU && !moveD) {
             moving = false;
         }
 
-        // Decceleration
+        /// Animations ///
+        // NOT Moving
         if (!moving) {
-            velX = velX - velX * deccelSpeed;
+            animator.SetBool("Swimming", false);
+        } 
+        
+        // Moving
+        else {
+            animator.SetBool("Swimming", true);
         }
-
-        // Set max movement
-        if (velX < -velMax) {
-            velX = -velMax;
-        }
-        if (velX > velMax) {
-            velX = velMax;
-        }
-        if (velY < -velMax) {
-            velY = -velMax;
-        }
-        if (velY > velMax) {
-            velY = velMax;
-        }
-
-        // Calculate movement amount
-        Vector2 movement = new Vector2(velX, velY) * Time.deltaTime;
-
-        // Move the player
-        transform.Translate(movement); 
         
         // Player map bounds
         WrapAround();
@@ -202,15 +269,36 @@ public class playerScript : MonoBehaviour
 
     public void OnCollisionEnter2D(Collision2D  collision)
     {
-
         // Check if the collision involves the player
         if (collision.gameObject.tag =="FishTag")
         {
+            // Determine the center position of the player's body
+            Vector3 fishCenterPosition = collision.gameObject.transform.position;
+
+            Instantiate(prefabGulp, fishCenterPosition, Quaternion.identity);
+
             // Play the audio clip
             sGulpSFX.Play();
 
             // Remove the object
             Destroy(collision.gameObject);
         }
+    }
+
+    
+    // Metheods for player
+    void DashAtAngle(float value) {
+
+        // Update particles angle based on its X and Y velocities
+        //particle[i].angle = atan2 ( particle[i].vY, particle[i].vX) * 180 / 3.14159265;
+        velX2 += Mathf.Cos(angle * Mathf.Deg2Rad) * value;
+        velY2 += Mathf.Sin(angle * Mathf.Deg2Rad) * value;
+
+        // Play SFX
+        sDashSFX.Play();
+
+        // Spawn VFX
+        //part.SpawnBubblesVFX(particle, tailX+tailW/2, tailY+tailH/2);
+
     }
 }
