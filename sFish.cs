@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class sFish : MonoBehaviour
 {
+    public Animator animator;
+
     // Sprites
     private SpriteRenderer gFish;
 
@@ -30,6 +32,7 @@ public class sFish : MonoBehaviour
     public float velMax = 4f;
     private float vX;
     private float vY;
+    private bool moving = false;
 
     // String
     public string tagToFind = "gBG"; // Tag to search for
@@ -88,6 +91,9 @@ public class sFish : MonoBehaviour
                 {
                     RandAct();
                 }
+
+                // Used for animations
+                moving = false;
             }
 
             // Wander up
@@ -102,6 +108,9 @@ public class sFish : MonoBehaviour
                 {
                     RandAct();
                 }
+
+                // Used for animations
+                moving = true;
             }
 
             // Wander right
@@ -116,6 +125,9 @@ public class sFish : MonoBehaviour
                 {
                     RandAct();
                 }
+
+                // Used for animations
+                moving = true;
             }
 
             // Wander down
@@ -130,6 +142,9 @@ public class sFish : MonoBehaviour
                 {
                     RandAct();
                 }
+
+                // Used for animations
+                moving = true;
             }
 
             // Wander left
@@ -143,6 +158,9 @@ public class sFish : MonoBehaviour
                 {
                     RandAct();
                 }
+
+                // Used for animations
+                moving = true;
             }
 
             // If idle stop movement
@@ -171,6 +189,14 @@ public class sFish : MonoBehaviour
 
             // Move the fish
             transform.Translate(movement); 
+
+            /// Animations ///
+            // NOT Moving
+            if (!moving) {
+                animator.SetBool("Swimming", false);
+            } else {
+                animator.SetBool("Swimming", true);
+            }
 
             // Fish map bounds
             WrapAround();

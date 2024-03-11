@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class playerScript : MonoBehaviour
 {
+    // Score maanger
+    public sScoreManager scoreManager;
+
     // Gulp popup
     public GameObject prefabGulp; // Reference to the prefab to spawn
 
@@ -35,6 +38,10 @@ public class playerScript : MonoBehaviour
     private float M_PI =  3.14159265358979323846264338327950288f;   /* pi */
     private float angle = 0f;
 
+    // Boost variables
+    public float boostSpeed = 10f;
+    public float boostDeccelSpeed = 0.04f;
+
     private bool moveL = false;
     private bool moveR = false;
     private bool moveU = false;
@@ -60,15 +67,10 @@ public class playerScript : MonoBehaviour
     void Update()
     {   
         // Spacebar is pressed, perform your actions here
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-			DashAtAngle(10);
-        }
-
         // A button on Xbox controller is pressed, perform your actions here
-        if (Input.GetButtonDown("Jump"))
+        if (Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Jump"))
         {
-			DashAtAngle(10);
+			DashAtAngle(boostSpeed);
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -158,17 +160,17 @@ public class playerScript : MonoBehaviour
 		}
 
 		// Max velocity
-		if (velX2 > 10){
-			velX2 = 10;
+		if (velX2 > 20){
+			velX2 = 20;
 		}
-		if (velX2 < -10){
-			velX2 = -10;
+		if (velX2 < -20){
+			velX2 = -20;
 		}
-		if (velY2 > 10){
-			velY2 = 10;
+		if (velY2 > 20){
+			velY2 = 20;
 		}
-		if (velY2 < -10){
-			velY2 = -10;
+		if (velY2 < -20){
+			velY2 = -20;
 		}
 
         // Calculate movement amount
@@ -186,8 +188,8 @@ public class playerScript : MonoBehaviour
         if (!moveL && !moveR) {
             velX = velX - velX * deccelSpeed;
         }
-		velX2 = velX2 - velX2 * deccelSpeed;
-		velY2 = velY2 - velY2 * deccelSpeed;
+		velX2 = velX2 - velX2 * boostDeccelSpeed;
+		velY2 = velY2 - velY2 * boostDeccelSpeed;
 
         // Stop movement check
         if (!moveL && !moveR && !moveU && !moveD) {
@@ -282,6 +284,9 @@ public class playerScript : MonoBehaviour
 
             // Remove the object
             Destroy(collision.gameObject);
+
+            // Add points to the score
+            scoreManager.AddPoints(20);
         }
     }
 
