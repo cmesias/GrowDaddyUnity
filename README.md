@@ -1,2 +1,2 @@
 # growdaddy-unity
- Android fishing survival game soon!
+ Android fishing survival game.
